@@ -93,7 +93,7 @@ def isCorrupted(p):
     print('')
     return 1
 
-def getLog(pathlist):
+def analyse(pathlist):
     print('Calculating number of files..')
     n = 1
     filesNumber = getFilesNumber(pathlist)
@@ -130,6 +130,5 @@ while answer != 9:
             answer2 = showMenu()
     if answer == 2:
         pathlist = ['/home/gabriel/Desktop/scripts/z']
-        getLog(pathlist)
+        analyse(pathlist)
         break
-
