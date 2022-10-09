@@ -1,1 +1,1 @@
-How to run: sudo ./main
+How to run: sudo python3 main.py
