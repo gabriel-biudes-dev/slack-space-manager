@@ -1,5 +1,6 @@
-import os, subprocess, hashlib, sys
+import os, subprocess, hashlib, sys, math, random, time
 from pathlib import Path
+from cryptography.fernet import Fernet
 
 #[CONDITIONS]
 #Works only on linux
@@ -7,6 +8,7 @@ from pathlib import Path
 #Must input the correct drivename
 
 drivename = '/dev/sdb3'
+fernet = Fernet('bjq5lagsjEDIvxmWM6badVWEFD4wSGVatHaSCoYZqeI=')
 
 class File:
     """Class to represent a file
@@ -78,9 +80,10 @@ def writeData(message, cluster, filesize):
     drive = open(drivename, 'wb')
     drive.seek((cluster * 4096) + (filesize % 4096))
     #drive.seek((cluster * 4096) + (filesize % 4096))
-    drive.write(bytes(message, encoding='utf-8'))
+    if isinstance(message, str): drive.write(bytes(message, encoding='utf-8'))
+    else: drive.write(bytes(message))
     drive.close()
-    print('Message written')
+    #print('Message written')
 
 def clearSlack(cluster, filesize):
     """Clear a file slack space
@@ -106,6 +109,8 @@ def showMenu2():
     print('Choose an option:')
     print('\t1)Work with one file')
     print('\t2)System checkup')
+    print('\t3)Store file in slack space')
+    print('\t4)Recover stored file')
     answer = int(input('Option: '))
     return answer
 
@@ -136,7 +141,7 @@ def getFilesNumber(path):
         int: Number of files
     """
     print('Calculating number of files..')
-    return len(getFiles(path))
+    return len(getfiles(path))
 
 def getClusters(text):
     """Gets all clusters from a file within a defined range
@@ -229,6 +234,211 @@ def searchsystem():
         return
     print('Exiting program..')
 
+def getfiles(path):
+    """Get file names from a path
+
+    Args:
+        path (obj): Path object
+
+    Returns:
+        list[str]: File names
+    """
+    p = path.glob('**/*')
+    return [str(x).split('/')[-1] for x in p if x.is_file()]
+
+def createfile(path):
+    hashlist = []
+    rand1 = str(random.randint(0, 9999))
+    rand2 = str(random.randint(0, 9999))
+    rand3 = str(random.randint(0, 9999))
+    rand4 = str(random.randint(0, 9999))
+    list = [rand1, rand2, rand3, rand4]
+    for x in list: hashlist.append(hashlib.md5(x.encode()).hexdigest())
+    hashlist[0] = hashlist[0] + hashlist[1]
+    hashlist[2] = hashlist[2] + hashlist[3]
+    hashlist[0] = hashlib.md5(hashlist[0].encode()).hexdigest()
+    hashlist[2] = hashlib.md5(hashlist[2].encode()).hexdigest()
+    final = '.' + hashlist[0] + hashlist[2]
+    ###
+    #files = getfiles(path)
+    #if final in files: return createfile(path)
+    return final
+
+def createSpaces(filename, folder):
+    """Create blank files to store data
+
+    Args:
+        filename (str): File name
+        folder (str): Blank files folder location
+
+    Returns:
+        list[str]: List of created file names
+    """
+    filescreated = []
+    filestats = os.stat(filename)
+    filesize = filestats.st_size
+    clustersneeded = filesize / 4095
+    clustersneeded = math.ceil(clustersneeded)
+    path = Path().absolute() / folder
+    for x in range(clustersneeded):
+        output = 'Creating file ' + str(x + 1) + '/' + str(clustersneeded)
+        Printer(output)
+        created = createfile(path)
+        filescreated.append(created)
+        fullpath = path / created
+        f = open(fullpath, 'w')
+        f.write('a')
+        f.close()
+    print()
+    return filescreated
+
+def fileinsert(filename, hiddenfiles, folder):
+    """Save a file data in the hiddenfiles slackspace
+
+    Args:
+        filename (str): File name
+        hiddenfiles (list[str]): List of hidden file names
+        folder (str): Folder where the hiddenfiles are stored
+    """
+    with open(filename, 'rb') as file: content = file.read()
+    x = 4095
+    filesiz = str(len(content))
+    res = [content[y-x:y] for y in range(x, len(content) + x, x)]
+    sizeint = len(hiddenfiles)
+    size = str(sizeint)
+    index = 0
+    print('Loading..')
+    time.sleep(5)
+    while(index < sizeint):
+        output = 'Writting file ' + str(index + 1) + '/' + size
+        Printer(output)
+        complete = folder + '/' + hiddenfiles[index]
+        try:
+            f = getData(complete)
+            writeData(res[index], f.lastcluster, f.size)
+        except Exception: 
+            index = index - 1
+            time.sleep(1)
+        index = index + 1
+    print()
+    try: decrypt('data.txt')
+    except Exception: pass
+    f = open('data.txt', 'a')
+    f.write('[START]\n')
+    f.write(filename + '\n')
+    f.write(filesiz + '\n')
+    for x in hiddenfiles:
+        f.write(x + ' ')
+        print(f'File created: {x}')
+    f.write('\n')
+    f.close()
+    try: encrypt('data.txt')
+    except Exception: pass
+
+def showstoredfiles():
+    """Show the stored files
+
+    Returns:
+        list[str]: List of the names of the stored files
+    """
+    flist = []
+    try: decrypt('data.txt')
+    except Exception: pass
+    f = open('data.txt', 'r')
+    lines = f.readlines()
+    f.close()
+    try: encrypt('data.txt')
+    except Exception: pass
+    for index,line in enumerate(lines):
+        if line == '[START]\n': flist.append(lines[index + 1])
+    return flist
+
+def savedata(name, filesize, sourcefiles):
+    """Saves the pointers to clusters in the text file
+
+    Args:
+        name (str): File name
+        filesize (str): File size
+        sourcefiles (list[int]): List of cluster numbers
+    """
+    name = name[0:-1]
+    filesize = int(filesize[0:-1])
+    clusters = []
+    current = filesize
+    index = 0
+    sourcelen = len(sourcefiles)
+    slstr = str(sourcelen)
+    time.sleep(5)
+    while(index < sourcelen):
+        output = 'Recovering file ' + str(index + 1) + '/' + slstr
+        Printer(output)
+        dir = 'spaces/' + sourcefiles[index]
+        try:
+            f = getData(dir)
+            clusters.append(f.lastcluster)
+        except Exception: 
+            index = index - 1
+            time.sleep(1)
+        index = index + 1
+
+    for x in clusters:
+        drive = open(drivename, 'rb')
+        drive.seek((x * 4096) + 1)
+        if current >= 4095:
+            current = current - 4095
+            slack = drive.read(4095)
+        else: slack = drive.read(filesize % 4095)
+        drive.close()
+        f2 = open(name, 'ab')
+        f2.write(slack)
+        f2.close()
+
+def recover(option):
+    """Recover the selected file
+
+    Args:
+        option (int): Choosen option
+    """
+    count = 0
+    option = option - 1
+    try: decrypt('data.txt')
+    except Exception: pass
+    f = open('data.txt', 'r')
+    lines = f.readlines()
+    for index,x in enumerate(lines):
+        if lines[index] == '[START]\n':
+            if count == option:
+                name = lines[index + 1]
+                filesize = lines[index + 2]
+                sourcefiles = lines[index + 3]
+            count = count + 1
+    f.close()
+    try: encrypt('data.txt')
+    except Exception: pass
+    sourcefiles = sourcefiles.split(' ')
+    sourcefiles.pop(-1)
+    savedata(name, filesize, sourcefiles)
+
+def encrypt(filee):
+    """Encrypt a file
+
+    Args:
+        filee (str): File path
+    """
+    with open(filee, 'rb') as file: original = file.read()
+    encrypted = fernet.encrypt(original)
+    with open(filee, 'wb') as encrypted_file: encrypted_file.write(encrypted)
+
+def decrypt(filee):
+    """Decrypt a file
+
+    Args:
+        filee (str): File path
+    """
+    with open(filee, 'rb') as file: content = file.read()
+    decrypted = fernet.decrypt(content)
+    with open(filee, 'wb') as file: file.write(decrypted)
+
 def main():
     """Main function
     """
@@ -245,6 +455,26 @@ def main():
                 answer2 = showMenu()
         if answer == 2:
             searchsystem()
+            break
+        if answer == 3:
+            folder = 'spaces'
+            filename = input('File name: ')
+            hiddenfiles = createSpaces(filename, folder)
+            fileinsert(filename, hiddenfiles, folder)
+            os.remove(filename)
+            print('File saved successfully')
+            break
+        if answer == 4:
+            flist = showstoredfiles()
+            if len(flist) == 0:
+                print('No files saved')
+                break
+            print('List of files saved:')
+            for index,x in enumerate(flist): print('\t' + str(index + 1) + ')' + x, end = '')
+            option = int(input('Option: '))
+            print('Loading..')
+            recover(option)
+            print('\nFile recovered successfully')
             break
 
 if __name__ == '__main__': main()
