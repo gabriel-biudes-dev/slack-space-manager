@@ -349,6 +349,8 @@ def showstoredfiles():
         list[str]: List of the names of the stored files
     """
     flist = []
+    sz = os.stat('data.txt').st_size
+    if sz == 0: return []
     try: decrypt('data.txt')
     except Exception: pass
     f = open('data.txt', 'r')
@@ -401,7 +403,8 @@ def savedata(name, filesize, sourcefiles):
         f2 = open(name, 'ab')
         f2.write(slack)
         f2.close()
-    decrypt(name)
+    try: decrypt(name)
+    except Exception: pass
 
 def recover(option):
     """Recover the selected file
@@ -423,6 +426,8 @@ def recover(option):
                 sourcefiles = lines[index + 3]
             count = count + 1
     f.close()
+    try: encrypt('data.txt')
+    except Exception: pass
     sourcefiles = sourcefiles.split(' ')
     sourcefiles.pop(-1)
     savedata(name, filesize, sourcefiles)
@@ -466,6 +471,8 @@ def main():
             break
         if answer == 3:
             folder = 'spaces'
+            try: os.mkdir(folder)
+            except Exception: pass
             filename = input('File name: ')
             hiddenfiles = createSpaces(filename, folder)
             fileinsert(filename, hiddenfiles, folder)
