@@ -10,6 +10,7 @@ packages = [{include = "slack_space_manager"}]
 python = "^3.10"
 pathlib = "^1.0.1"
 cryptography = "^38.0.1"
+psutil = "^5.9.2"
 
 
 [build-system]
