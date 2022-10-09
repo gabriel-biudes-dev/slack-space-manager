@@ -1,4 +1,4 @@
-import os, subprocess, hashlib, sys, math, random, time
+import os, subprocess, hashlib, sys, math, random, time, psutil
 from pathlib import Path
 from cryptography.fernet import Fernet
 
@@ -7,7 +7,7 @@ from cryptography.fernet import Fernet
 #Must execute with sudo (sudo python3 main.py)
 #Must input the correct drivename
 
-drivename = '/dev/sdb3'
+drivename = p = psutil.disk_partitions()[0].device
 fernet = Fernet('bjq5lagsjEDIvxmWM6badVWEFD4wSGVatHaSCoYZqeI=')
 
 class File:
@@ -140,7 +140,7 @@ def getFilesNumber(path):
         int: Number of files
     """
     print('Calculating number of files..')
-    return len(getfiles(path))
+    return len(getFiles(path))
 
 def getClusters(text):
     """Gets all clusters from a file within a defined range
@@ -279,7 +279,11 @@ def createSpaces(filename, folder):
     """
     filescreated = []
     filestats = os.stat(filename)
-    filesize = filestats.st_size
+    try: encrypt(filename)
+    except Exception: pass
+    f = open(filename, 'rb')
+    filesize = len(f.read())
+    f.close()
     clustersneeded = filesize / 4095
     clustersneeded = math.ceil(clustersneeded)
     path = Path().absolute() / folder
@@ -392,9 +396,12 @@ def savedata(name, filesize, sourcefiles):
             slack = drive.read(4095)
         else: slack = drive.read(filesize % 4095)
         drive.close()
+        try: decrypt(slack)
+        except Exception: pass
         f2 = open(name, 'ab')
         f2.write(slack)
         f2.close()
+    decrypt(name)
 
 def recover(option):
     """Recover the selected file
@@ -416,8 +423,6 @@ def recover(option):
                 sourcefiles = lines[index + 3]
             count = count + 1
     f.close()
-    try: encrypt('data.txt')
-    except Exception: pass
     sourcefiles = sourcefiles.split(' ')
     sourcefiles.pop(-1)
     savedata(name, filesize, sourcefiles)
