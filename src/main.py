@@ -98,7 +98,6 @@ def clearSlack(cluster, filesize):
         drive.seek((cluster * 4096) + (filesize % 4096)+ x)
         drive.write(bytes(b'\x00'))
     drive.close()
-    print('Slack space cleared')
 
 def showMenu2():
     """Shows the second application menu
@@ -229,8 +228,12 @@ def searchsystem():
     answer = input('Do you want to clear file slacks now? (press y)')
     if answer == 'y' or answer == 'Y':
         print('Clearing slacks..')
-        for x in corruptedfiles: clearSlack(x.lastcluster, x.size)
-        print('Slack spaces cleared successfully')
+        lenstr = str(len(corruptedfiles))
+        for index,x in enumerate(corruptedfiles):
+            output = 'Clearing file ' + str(index + 1) + '/' + lenstr
+            Printer(output)
+            clearSlack(x.lastcluster, x.size)
+        print('\nSlack spaces cleared successfully')
         return
     print('Exiting program..')
 
