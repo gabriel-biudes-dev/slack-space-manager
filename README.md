@@ -19,14 +19,14 @@ This project uses Python and manages dependencies with [Poetry](https://python-p
 
 ## Installation
 
-1. Clone the repository:
+Clone the repository:
    ```bash
    git clone https://github.com/yourusername/slack-space-tool.git
    cd slack-space-tool
 
-    Install Poetry:
+Install Poetry:
 
-pip install poetry
+    pip install poetry
 
 Install the dependencies:
 
