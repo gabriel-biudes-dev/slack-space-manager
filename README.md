@@ -20,7 +20,6 @@ This project uses Python and manages dependencies with [Poetry](https://python-p
 ## Installation
 
 Clone the repository:
-   ```bash
    git clone https://github.com/yourusername/slack-space-tool.git
    cd slack-space-tool```
 
