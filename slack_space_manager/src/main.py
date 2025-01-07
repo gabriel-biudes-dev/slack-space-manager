@@ -225,7 +225,7 @@ def searchsystem():
     if ammount == 0:
         print('Congratulations! You have no slack spaces corrupted')
         return
-    answer = input('Do you want to clear file slacks now? (press y)')
+    answer = input('Do you want to clear file slacks now? (press y) (MAY CAUSE SYSTEM CORRUPTION)')
     if answer == 'y' or answer == 'Y':
         print('Clearing slacks..')
         lenstr = str(len(corruptedfiles))
