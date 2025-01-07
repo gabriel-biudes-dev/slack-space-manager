@@ -36,9 +36,9 @@ Usage
 
 Run the program with:
 
-sudo python3 main.py
+    sudo python3 main.py
 
-Main Menu
+**Main Menu**
 
 Upon starting the program, the following main menu will appear:
 
@@ -69,7 +69,7 @@ Choose an option:
     Option 4: Recover Stored File
     Retrieves and reconstructs a file previously stored in slack space by combining its parts from the associated files.
 
-How It Works
+**How It Works**
 
 Slack space refers to the unused portion of a disk cluster after a file is written. This tool takes advantage of this space for specialized operations:
 
@@ -77,7 +77,7 @@ Slack space refers to the unused portion of a disk cluster after a file is writt
     Conduct system-wide maintenance of slack spaces.
     Utilize slack space for secure file storage and recovery.
 
-Limitations
+**Limitations**
 
     No Command-Line Parameters: All interactions occur through the menu interface.
     Permissions: Administrative rights may be required for certain operations, especially system checkups.
