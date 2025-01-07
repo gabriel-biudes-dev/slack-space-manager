@@ -20,8 +20,10 @@ This project uses Python and manages dependencies with [Poetry](https://python-p
 ## Installation
 
 Clone the repository:
-   git clone https://github.com/yourusername/slack-space-tool.git
-   cd slack-space-tool```
+
+    git clone https://github.com/gabriel-biudes-dev/slack-space-manager.git
+   
+    cd slack-space-manager
 
 Install Poetry:
 
@@ -40,12 +42,6 @@ Run the program with:
 **Main Menu**
 
 Upon starting the program, the following main menu will appear:
-
-Choose an option:
-	1) Work with one file
-	2) System checkup
-	3) Store file in slack space
-	4) Recover stored file
 
     Option 1: Work with One File
     Opens a secondary menu for single-file operations:
