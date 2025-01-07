@@ -1,4 +1,4 @@
-# Slack Space Manipulation Tool
+# Slack Space Manager
 
 This tool provides advanced operations on the slack space of files, enabling users to work with individual files, perform system-wide slack space maintenance, and securely store and recover files using slack space.
 
@@ -7,7 +7,7 @@ This tool provides advanced operations on the slack space of files, enabling use
 - **Work with One File**:  
   Interact with a single file to view its data, write messages into its slack space, and clear its slack space.
 - **System Checkup**:  
-  Perform a system-wide cleanup of slack spaces and check for potential corruption issues.
+  Perform a system-wide cleanup of slack spaces.
 - **Store File in Slack Space**:  
   Split an input file into smaller parts and store them in the slack spaces of newly created files.
 - **Recover Stored File**:  
